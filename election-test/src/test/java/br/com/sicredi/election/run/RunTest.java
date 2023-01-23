@@ -8,6 +8,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitPlatform.class)
 @SelectPackages("br.com.sicredi.election.aceitacao")
-@IncludeTags("wip")
+@IncludeTags("all")
 public class RunTest {
 }
