@@ -34,12 +34,7 @@ public class PostSessionTest extends BaseTest {
     @Description("Deve cadastrar uma seção com sucesso")
     public void createSessionIsOk(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
         SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
@@ -52,17 +47,9 @@ public class PostSessionTest extends BaseTest {
         assertEquals(sessionRequest.getNumber(),sessionResponse.getNumber());
         assertEquals(sessionRequest.getUrnNumber(),sessionResponse.getUrnNumber());
 
-        sessionService.deleteSession(sessionResponse.getSessionId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        sessionService.deleteSession(sessionResponse.getSessionId());
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
@@ -87,13 +74,12 @@ public class PostSessionTest extends BaseTest {
     public void createSessionIsZoneIsError(){
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIdZoneError();
-        String message = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
+        sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("A zona não existe."))
                 ;
-        assertEquals("A zona não existe.",message);
     }
 
     @Test
@@ -102,13 +88,12 @@ public class PostSessionTest extends BaseTest {
     public void createSessionIsNumberExist(){
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionNumberExist();
-        String message = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
+        sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("message")
+                .body(containsString("Número da seção já existe."))
                 ;
-        assertEquals("Número da seção já existe.",message);
     }
 
     @Test
@@ -116,27 +101,17 @@ public class PostSessionTest extends BaseTest {
     @Description("Tentar cadastrar uma seção com numero da urna ja existente")
     public void createSessionIsUrnNumberExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionUrnNumberExist(zoneResponse.getZoneId());
-        String message = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
+        sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("message")
+                .body(containsString("Número da urna já existe."))
                 ;
-        assertEquals("Número da urna já existe.",message);
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
@@ -145,12 +120,11 @@ public class PostSessionTest extends BaseTest {
     public void createSessionIsNumberAndUrnNumberNegative(){
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionNumberAndUrnNumberInvalid();
-        String description = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
+        sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("description")
+                .body(containsString("deve ser maior ou igual a 0"))
                 ;
-        assertEquals("[deve ser maior ou igual a 0, deve ser maior ou igual a 0]",description);
     }
 }

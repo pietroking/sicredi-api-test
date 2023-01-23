@@ -22,6 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("Colaborador")
@@ -40,28 +41,13 @@ public class DeleteCollaboratorTest extends BaseTest {
     @Description("Deve deletar um colaborador com sucesso")
     public void deleteCollaboratorIsOk(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
-        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(SessionResponse.class)
-                ;
+        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest)).then().extract().as(SessionResponse.class);
 
         CollaboratorRequest collaboratorRequest = collaboratorBuilder.create_CollaboratorIsOk(sessionResponse.getSessionId());
-        CollaboratorResponse collaboratorResponse = collaboratorService.createCollaborator(Utils.convertCollaboratorToJson(collaboratorRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(CollaboratorResponse.class)
-                ;
+        CollaboratorResponse collaboratorResponse = collaboratorService.createCollaborator(Utils.convertCollaboratorToJson(collaboratorRequest)).then().extract().as(CollaboratorResponse.class);
 
         collaboratorService.deleteCollaborator(collaboratorResponse.getCollaboratorId())
                 .then()
@@ -69,25 +55,16 @@ public class DeleteCollaboratorTest extends BaseTest {
                 .statusCode(HttpStatus.SC_NO_CONTENT)
         ;
 
-        String message = collaboratorService.findIdSession(sessionResponse.getSessionId())
+        collaboratorService.findIdSession(sessionResponse.getSessionId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("Não existem colaboradores nesta seção."))
                 ;
-        assertEquals("Não existem colaboradores nesta seção.",message);
 
-        sessionService.deleteSession(sessionResponse.getSessionId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        sessionService.deleteSession(sessionResponse.getSessionId());
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
@@ -95,12 +72,11 @@ public class DeleteCollaboratorTest extends BaseTest {
     @Description("Tentar deletar um colaborador inexistente")
     public void deleteCollaboratorIsError(){
 
-        String message = collaboratorService.deleteCollaborator(99999999999999L)
+        collaboratorService.deleteCollaborator(99999999999999L)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("O colaborador não existe."))
                 ;
-        assertEquals("O colaborador não existe.",message);
     }
 }

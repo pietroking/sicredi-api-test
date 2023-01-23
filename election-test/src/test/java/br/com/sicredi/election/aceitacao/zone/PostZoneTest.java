@@ -14,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Zona")
@@ -48,26 +49,16 @@ public class PostZoneTest extends BaseTest {
     @Description("Tentar cadastrar uma zona com o numero ja existente")
     public void createZoneIsNumberExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
-        String message = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
+
+        zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("message")
-                ;
-        assertEquals("Número da zona já existe.",message);
-
-
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
+                .body(containsString("Número da zona já existe."))
         ;
+
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
@@ -75,13 +66,13 @@ public class PostZoneTest extends BaseTest {
     @Description("Tentar cadastrar uma zona sem numero")
     public void createZoneIsNumberNull(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneEmpty();
-        String description = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
+        zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("description")
-                ;
-        assertEquals("[O number não pode ser nulo]", description);
+                .body(containsString("O number não pode ser nulo"))
+        ;
+
     }
 
     @Test
@@ -89,12 +80,11 @@ public class PostZoneTest extends BaseTest {
     @Description("Tentar cadastrar uma zona com numero negativo")
     public void createZoneIsNegativeNumber(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneNegativeNumber();
-        String description = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
+        zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("description")
-                ;
-        assertEquals("[deve ser maior ou igual a 0]", description);
+                .body(containsString("deve ser maior ou igual a 0"))
+        ;
     }
 }

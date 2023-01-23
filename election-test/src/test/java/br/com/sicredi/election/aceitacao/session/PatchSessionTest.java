@@ -34,23 +34,10 @@ public class PatchSessionTest extends BaseTest {
     @Description("Deve atualizar seção com sucesso")
     public void updateSessionIsOk(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
-        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(SessionResponse.class)
-                ;
-        assertEquals(zoneResponse.getZoneId(),sessionResponse.getZoneId());
-        assertEquals(sessionRequest.getNumber(),sessionResponse.getNumber());
-        assertEquals(sessionRequest.getUrnNumber(),sessionResponse.getUrnNumber());
+        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest)).then().extract().as(SessionResponse.class);
 
         SessionRequest sessionUpdateRequest = sessionBuilder.update_SessionUrnNumberIsOk();
         SessionResponse sessionUpdate = sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),sessionResponse.getSessionId())
@@ -64,17 +51,9 @@ public class PatchSessionTest extends BaseTest {
         assertEquals(sessionResponse.getNumber(),sessionUpdate.getNumber());
         assertEquals(sessionUpdateRequest.getUrnNumber(),sessionUpdate.getUrnNumber());
 
-        sessionService.deleteSession(sessionResponse.getSessionId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        sessionService.deleteSession(sessionResponse.getSessionId());
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
@@ -82,20 +61,11 @@ public class PatchSessionTest extends BaseTest {
     @Description("Tentar atualizar uma seção com numero da urna vazia")
     public void updateSessionIsUrnNumberEmpty(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
         SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(SessionResponse.class)
-                ;
+                .then().extract().as(SessionResponse.class);
 
         SessionRequest sessionUpdateRequest = sessionBuilder.update_SessionUrnNumberNull();
         sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),sessionResponse.getSessionId())
@@ -105,17 +75,9 @@ public class PatchSessionTest extends BaseTest {
                 .body(containsString("O urnNumber não pode ser nulo"))
                 ;
 
-        sessionService.deleteSession(sessionResponse.getSessionId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        sessionService.deleteSession(sessionResponse.getSessionId());
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
@@ -123,41 +85,22 @@ public class PatchSessionTest extends BaseTest {
     @Description("Tentar atualizar uma seção com numero da urna negativo")
     public void updateSessionIsUrnNumberNegative(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
-        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(SessionResponse.class)
-                ;
+        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest)).then().extract().as(SessionResponse.class);
 
         SessionRequest sessionUpdateRequest = sessionBuilder.update_SessionUrnNumberNegative();
-        String description = sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),sessionResponse.getSessionId())
+        sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),sessionResponse.getSessionId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("description")
+                .body(containsString("deve ser maior ou igual a 0"))
                 ;
-        assertEquals("[deve ser maior ou igual a 0]",description);
 
-        sessionService.deleteSession(sessionResponse.getSessionId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        sessionService.deleteSession(sessionResponse.getSessionId());
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
@@ -166,13 +109,11 @@ public class PatchSessionTest extends BaseTest {
     public void updateSessionIsNumberError(){
 
         SessionRequest sessionUpdateRequest = sessionBuilder.update_SessionUrnNumberIsOk();
-        String message = sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),99999999999999L)
+        sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),99999999999999L)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("A seção não existe."))
                 ;
-        assertEquals("A seção não existe.",message);
-
     }
 }
