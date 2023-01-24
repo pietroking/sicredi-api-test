@@ -25,7 +25,7 @@ public class ZoneService {
                 ;
     }
 
-    public Response updateZone(String zone, Long id){
+    public Response updateZone(String zone, Integer id){
         return
                 given()
                         .pathParam("id", id)
@@ -36,7 +36,7 @@ public class ZoneService {
                 ;
     }
 
-    public Response deleteZone(Long id){
+    public Response deleteZone(Integer id){
         return
                 given()
                         .pathParam("id", id)

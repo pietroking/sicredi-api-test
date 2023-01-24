@@ -22,7 +22,7 @@ public class GetZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve listar zonas registradas")
-    public void findAllZoneIsOk(){
+    public void findAllZone_WhenZone_ThenReturnListOfZoneCreated(){
         ZoneResponse[] listZone = zoneService.findAll()
                 .then()
                 .log().all()

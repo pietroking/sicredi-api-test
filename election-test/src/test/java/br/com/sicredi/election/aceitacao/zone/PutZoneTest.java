@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.is;
 @DisplayName("Zona")
 @Epic("Atualizar zona")
 @Feature("Zona")
@@ -26,19 +26,18 @@ public class PutZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve atualizar uma zona com sucesso")
-    public void updadeZoneIsOk(){
+    public void update_WhenZoneUpdateRequestIsOk_ThenZoneUpdateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         ZoneRequest zoneUpdateRequest = zoneBuilder.update_ZoneIsOk();
-        ZoneResponse zoneUpdate = zoneService.updateZone(Utils.convertZoneToJson(zoneUpdateRequest), zoneResponse.getZoneId())
+        zoneService.updateZone(Utils.convertZoneToJson(zoneUpdateRequest), zoneResponse.getZoneId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_OK)
-                .extract().as(ZoneResponse.class)
+                .body("zoneId",is(zoneResponse.getZoneId()))
+                .body("number",is(zoneUpdateRequest.getNumber()))
                 ;
-        assertEquals(zoneResponse.getZoneId(),zoneUpdate.getZoneId());
-        assertEquals(zoneUpdateRequest.getNumber(),zoneUpdate.getNumber());
 
         zoneService.deleteZone(zoneResponse.getZoneId());
     }
@@ -46,7 +45,7 @@ public class PutZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma zona com numero já existente")
-    public void updadeZoneIsNumberExist(){
+    public void update_WhenZoneNumberExist_ThenReturnMessageZoneNumberIsExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -63,7 +62,7 @@ public class PutZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma zona com numero vazio")
-    public void updadeZoneIsNull(){
+    public void update_WhenZoneUpdateRequestIsEmpty_ThenReturnMessageNullError(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -81,7 +80,7 @@ public class PutZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma zona com numero negativo")
-    public void updadeZoneIsNegativeNumber(){
+    public void update_WhenZoneUpdateRequestIsNumberInvalid_ThenReturnMessageNumberInvalid(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -90,7 +89,7 @@ public class PutZoneTest extends BaseTest {
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(containsString("deve ser maior ou igual a 0"))
+                .body(containsString("O number não pode ser negativo"))
                 ;
 
         zoneService.deleteZone(zoneResponse.getZoneId());
@@ -99,9 +98,9 @@ public class PutZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma zona com id inexistente")
-    public void updadeZoneIsZoneIdError(){
+    public void update_WhenZoneIdIsInvalid_ThenReturnMessageZoneNotExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        zoneService.updateZone(Utils.convertZoneToJson(zoneRequest), 99999999999999L)
+        zoneService.updateZone(Utils.convertZoneToJson(zoneRequest), 999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)

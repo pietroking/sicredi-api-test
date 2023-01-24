@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.is;
 
 @DisplayName("Colaborador")
 @Epic("Atualizar colaboradores")
@@ -39,7 +39,7 @@ public class PatchCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve atualizar um colaborador com sucesso")
-    public void updateCollaboratorIsOk(){
+    public void update_WhenCollaboratorUpdateRequestIsOk_ThenCollaboratorUpdateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -53,16 +53,15 @@ public class PatchCollaboratorTest extends BaseTest {
         CollaboratorResponse collaboratorResponse = collaboratorService.createCollaborator(Utils.convertCollaboratorToJson(collaboratorRequest)).then().extract().as(CollaboratorResponse.class);
 
         CollaboratorRequest collaboratorUpdateRequest = collaboratorBuilder.create_CollaboratorIsOk(sessionResponse2.getSessionId());
-        CollaboratorResponse collaboratorUpdate = collaboratorService.updateCollaborator(Utils.convertCollaboratorToJson(collaboratorUpdateRequest),collaboratorResponse.getCollaboratorId())
+        collaboratorService.updateCollaborator(Utils.convertCollaboratorToJson(collaboratorUpdateRequest),collaboratorResponse.getCollaboratorId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_OK)
-                .extract().as(CollaboratorResponse.class)
+                .body("collaboratorId",is(collaboratorResponse.getCollaboratorId()))
+                .body("sessionId",is(sessionResponse2.getSessionId()))
+                .body("name",is(collaboratorResponse.getName()))
+                .body("cpf",is(collaboratorResponse.getCpf()))
                 ;
-        assertEquals(collaboratorResponse.getCollaboratorId(),collaboratorUpdate.getCollaboratorId());
-        assertEquals(sessionResponse2.getSessionId(),collaboratorUpdate.getSessionId());
-        assertEquals(collaboratorResponse.getName(),collaboratorUpdate.getName());
-        assertEquals(collaboratorResponse.getCpf(),collaboratorUpdate.getCpf());
 
         collaboratorService.deleteCollaborator(collaboratorResponse.getCollaboratorId());
 
@@ -76,7 +75,7 @@ public class PatchCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar um colaborador passando seção vazia")
-    public void updateCollaboratorIsSessionEmpty(){
+    public void update_WhenCollaboratorUpdateRequestIsEmpty_ThenReturnMessageNullError(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -104,7 +103,7 @@ public class PatchCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar um colaborador passando seção não existente")
-    public void updateCollaboratorIsSessionError(){
+    public void update_WhenCandidateSessionIdIsInvalid_ThenReturnMessageSessionNotExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 

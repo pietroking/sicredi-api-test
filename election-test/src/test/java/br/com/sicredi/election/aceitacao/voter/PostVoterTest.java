@@ -4,8 +4,6 @@ import br.com.sicredi.election.aceitacao.base.BaseTest;
 import br.com.sicredi.election.builder.SessionBuilder;
 import br.com.sicredi.election.builder.VoterBuilder;
 import br.com.sicredi.election.builder.ZoneBuilder;
-import br.com.sicredi.election.dto.collaborator.CollaboratorRequest;
-import br.com.sicredi.election.dto.collaborator.CollaboratorResponse;
 import br.com.sicredi.election.dto.session.SessionRequest;
 import br.com.sicredi.election.dto.session.SessionResponse;
 import br.com.sicredi.election.dto.voter.VoterRequest;
@@ -25,7 +23,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.is;
 
 @DisplayName("Eleitor")
 @Epic("Cadastrar eleitores")
@@ -41,7 +39,7 @@ public class PostVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve cadastrar um elitor com sucesso")
-    public void createVoterIsOk(){
+    public void create_WhenVoterRequestIsOk_ThenVoterCreateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -53,11 +51,11 @@ public class PostVoterTest extends BaseTest {
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_CREATED)
+                .body("sessionId",is(sessionResponse.getSessionId()))
+                .body("name",is(voterRequest.getName()))
+                .body("cpf",is(voterRequest.getCpf()))
                 .extract().as(VoterResponse.class)
                 ;
-        assertEquals(sessionResponse.getSessionId(),voterResponse.getSessionId());
-        assertEquals(voterRequest.getName(),voterResponse.getName());
-        assertEquals(voterRequest.getCpf(),voterResponse.getCpf());
 
         voterService.deleteVoter(voterResponse.getVoterId());
 
@@ -69,7 +67,7 @@ public class PostVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar um eleitor com vazio")
-    public void createVoterIsEmpty(){
+    public void create_WhenVoterRequestIsEmpty_ThenReturnMessageNullError(){
 
         VoterRequest voterRequest = voterBuilder.create_VoterEmpty();
         voterService.createVoter(Utils.convertVoterToJson(voterRequest))
@@ -85,7 +83,7 @@ public class PostVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar um eleitor em uma seção inexistente")
-    public void createVoterIsSessionError(){
+    public void create_WhenVoterRequestIsSessionInvalid_ThenReturnMessageSessionNotExist(){
 
         VoterRequest voterRequest = voterBuilder.create_VoterSessionIdError();
         voterService.createVoter(Utils.convertVoterToJson(voterRequest))
@@ -100,7 +98,7 @@ public class PostVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar um eleitor com cpf invalido")
-    public void createVoterIsCpfError(){
+    public void create_WhenVoterRequestIsCpfInvalid_ThenReturnMessageCpfInvalid(){
 
         VoterRequest voterRequest = voterBuilder.create_VoterCpfInvalid();
         voterService.createVoter(Utils.convertVoterToJson(voterRequest))

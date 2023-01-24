@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties
 public class VoterRequest {
     private String name;
-    private Long sessionId;
+    private Integer sessionId;
     private String cpf;
 }

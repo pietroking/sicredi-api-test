@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.is;
 @DisplayName("Seção")
 @Epic("Cadastrar seções")
 @Feature("Seção")
@@ -32,7 +32,7 @@ public class PostSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve cadastrar uma seção com sucesso")
-    public void createSessionIsOk(){
+    public void create_WhenSessionRequestIsOk_ThenSessionCreateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -41,11 +41,11 @@ public class PostSessionTest extends BaseTest {
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_CREATED)
+                .body("zoneId",is(sessionRequest.getIdZone()))
+                .body("number",is(sessionRequest.getNumber()))
+                .body("urnNumber",is(sessionRequest.getUrnNumber()))
                 .extract().as(SessionResponse.class)
                 ;
-        assertEquals(zoneResponse.getZoneId(),sessionResponse.getZoneId());
-        assertEquals(sessionRequest.getNumber(),sessionResponse.getNumber());
-        assertEquals(sessionRequest.getUrnNumber(),sessionResponse.getUrnNumber());
 
         sessionService.deleteSession(sessionResponse.getSessionId());
 
@@ -55,7 +55,7 @@ public class PostSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar uma seção com vazia")
-    public void createSessionIsEmpty(){
+    public void create_WhenSessionRequestIsEmpty_ThenReturnMessageNullError(){
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionEmpty();
         sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
@@ -71,7 +71,7 @@ public class PostSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar uma seção em uma zona inexistente")
-    public void createSessionIsZoneIsError(){
+    public void create_WhenSessionRequestIsZoneIdInvalid_ThenReturnMessageZoneNotExist(){
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIdZoneError();
         sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
@@ -85,7 +85,7 @@ public class PostSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar uma seção com numero ja existente")
-    public void createSessionIsNumberExist(){
+    public void create_WhenSessionRequestIsNumberExist_ThenReturnMessageSessionNumberExist(){
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionNumberExist();
         sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
@@ -99,7 +99,7 @@ public class PostSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar uma seção com numero da urna ja existente")
-    public void createSessionIsUrnNumberExist(){
+    public void create_WhenSessionRequestIsUrnNumberExist_ThenReturnMessageSessionUrnNumberExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -117,14 +117,15 @@ public class PostSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar uma seção e numero da urna negativos")
-    public void createSessionIsNumberAndUrnNumberNegative(){
+    public void create_WhenSessionRequestIsNumberInvalid_ThenReturnMessageNumberAndUrnNumberInvalid(){
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionNumberAndUrnNumberInvalid();
         sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(containsString("deve ser maior ou igual a 0"))
+                .body(containsString("O number não pode ser negativo"))
+                .body(containsString("O urnNumber não pode ser negativo"))
                 ;
     }
 }

@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @Data
 @JsonIgnoreProperties
 public class CollaboratorResponse {
-    private Long collaboratorId;
+    private Integer collaboratorId;
     private String name;
-    private Long sessionId;
+    private Integer sessionId;
     private String cpf;
 }

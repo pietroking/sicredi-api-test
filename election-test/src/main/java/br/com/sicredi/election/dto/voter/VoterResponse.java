@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @Data
 @JsonIgnoreProperties
 public class VoterResponse {
-    private Long voterId;
+    private Integer voterId;
     private String name;
-    private Long sessionId;
+    private Integer sessionId;
     private String cpf;
     private Boolean statusVote;
 }

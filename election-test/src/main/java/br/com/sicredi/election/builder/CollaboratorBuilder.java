@@ -4,9 +4,9 @@ import br.com.sicredi.election.dto.collaborator.CollaboratorRequest;
 
 public class CollaboratorBuilder {
 
-    private CollaboratorRequest collaboratorRequestBuild(){return CollaboratorRequest.builder().name("teste api").sessionId(1L).cpf("68344658047").build();}
+    private CollaboratorRequest collaboratorRequestBuild(){return CollaboratorRequest.builder().name("teste api").sessionId(1).cpf("68344658047").build();}
 
-    public CollaboratorRequest create_CollaboratorIsOk(Long idSession){
+    public CollaboratorRequest create_CollaboratorIsOk(Integer idSession){
         CollaboratorRequest collaboratorRequest = collaboratorRequestBuild();
         collaboratorRequest.setSessionId(idSession);
         return collaboratorRequest;
@@ -20,7 +20,7 @@ public class CollaboratorBuilder {
     }
     public CollaboratorRequest create_CollaboratorSessionIdError(){
         CollaboratorRequest collaboratorRequestInvalid = collaboratorRequestBuild();
-        collaboratorRequestInvalid.setSessionId(-1L);
+        collaboratorRequestInvalid.setSessionId(-1);
         return collaboratorRequestInvalid;
     }
     public CollaboratorRequest create_CollaboratorCpfInvalid(){
@@ -29,12 +29,12 @@ public class CollaboratorBuilder {
         return collaboratorRequestInvalid;
     }
     public CollaboratorRequest update_CollaboratorIsOk(){
-        return CollaboratorRequest.builder().sessionId(1L).build();
+        return CollaboratorRequest.builder().sessionId(1).build();
     }
     public CollaboratorRequest update_CollaboratorIsSessionEmpty(){
         return CollaboratorRequest.builder().sessionId(null).build();
     }
     public CollaboratorRequest update_CollaboratorIsSessionInvalid(){
-        return CollaboratorRequest.builder().sessionId(-1L).build();
+        return CollaboratorRequest.builder().sessionId(-1).build();
     }
 }

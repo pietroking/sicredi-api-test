@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties
 public class CollaboratorRequest {
     private String name;
-    private Long sessionId;
+    private Integer sessionId;
     private String cpf;
 }

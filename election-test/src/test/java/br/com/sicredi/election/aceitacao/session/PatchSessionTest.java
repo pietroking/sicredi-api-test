@@ -19,7 +19,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.is;
+
 @DisplayName("Seção")
 @Epic("Atualizar seções")
 @Feature("Seção")
@@ -32,7 +33,7 @@ public class PatchSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve atualizar seção com sucesso")
-    public void updateSessionIsOk(){
+    public void update_WhenSessionUpdateRequestIsOk_ThenSessionUpdateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -40,16 +41,15 @@ public class PatchSessionTest extends BaseTest {
         SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest)).then().extract().as(SessionResponse.class);
 
         SessionRequest sessionUpdateRequest = sessionBuilder.update_SessionUrnNumberIsOk();
-        SessionResponse sessionUpdate = sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),sessionResponse.getSessionId())
+        sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),sessionResponse.getSessionId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_OK)
-                .extract().as(SessionResponse.class)
+                .body("sessionId",is(sessionResponse.getSessionId()))
+                .body("zoneId",is(sessionResponse.getZoneId()))
+                .body("number",is(sessionResponse.getNumber()))
+                .body("urnNumber",is(sessionUpdateRequest.getUrnNumber()))
                 ;
-        assertEquals(sessionResponse.getSessionId(),sessionUpdate.getSessionId());
-        assertEquals(sessionResponse.getZoneId(),sessionUpdate.getZoneId());
-        assertEquals(sessionResponse.getNumber(),sessionUpdate.getNumber());
-        assertEquals(sessionUpdateRequest.getUrnNumber(),sessionUpdate.getUrnNumber());
 
         sessionService.deleteSession(sessionResponse.getSessionId());
 
@@ -59,13 +59,12 @@ public class PatchSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma seção com numero da urna vazia")
-    public void updateSessionIsUrnNumberEmpty(){
+    public void update_WhenUrnNumberUpdateRequestIsEmpty_ThenReturnMessageNullError(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
-        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
-                .then().extract().as(SessionResponse.class);
+        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest)).then().extract().as(SessionResponse.class);
 
         SessionRequest sessionUpdateRequest = sessionBuilder.update_SessionUrnNumberNull();
         sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),sessionResponse.getSessionId())
@@ -83,7 +82,7 @@ public class PatchSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma seção com numero da urna negativo")
-    public void updateSessionIsUrnNumberNegative(){
+    public void update_WhenUrnNumberUpdateRequestIsNumberInvalid_ThenReturnMessageUrnNumberInvalid(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -95,7 +94,7 @@ public class PatchSessionTest extends BaseTest {
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(containsString("deve ser maior ou igual a 0"))
+                .body(containsString("O urnNumber não pode ser negativo"))
                 ;
 
         sessionService.deleteSession(sessionResponse.getSessionId());
@@ -106,10 +105,10 @@ public class PatchSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma seção inexistente")
-    public void updateSessionIsNumberError(){
+    public void update_WhenSessionIdIsInvalid_ThenReturnMessageSessionNotExist(){
 
         SessionRequest sessionUpdateRequest = sessionBuilder.update_SessionUrnNumberIsOk();
-        sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),99999999999999L)
+        sessionService.updateSession(Utils.convertSessionToJson(sessionUpdateRequest),999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)

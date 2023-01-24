@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @Data
 @JsonIgnoreProperties
 public class ZoneResponse {
-    private Long zoneId;
-    private Long number;
+    private Integer zoneId;
+    private Integer number;
 }

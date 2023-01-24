@@ -30,7 +30,7 @@ public class GetSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve listar seções registradas")
-    public void findAllSessionIsOk(){
+    public void findAllSession_WhenSession_ThenReturnListOfSessionCreated(){
         SessionResponse[] listSession = sessionService.findAll()
                 .then()
                 .log().all()
@@ -43,8 +43,8 @@ public class GetSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve listar seções registradas de uma determinada zona")
-    public void findSessionByZoneIsOk(){
-        SessionResponse[] listSession = sessionService.findIdZone(1L)
+    public void findSessionByZone_WhenSessionInZone_ThenReturnListOfSessionCreatedInTheZone(){
+        SessionResponse[] listSession = sessionService.findIdZone(1)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_OK)
@@ -56,8 +56,8 @@ public class GetSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar listar seções registradas de uma zona inexistente")
-    public void findSessionByZoneIsError(){
-        sessionService.findIdZone(99999999999999L)
+    public void findSessionByZone_WhenZoneInvalid_ThenReturnMessageZoneNotExist(){
+        sessionService.findIdZone(999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
@@ -68,7 +68,7 @@ public class GetSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar listar seções de uma zona sem seções")
-    public void findSessionByZoneSessionIsEmpty(){
+    public void findSessionByZone_WhenZoneHasNoSession_ThenReturnMessageNoSessionInTheZone(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -81,5 +81,4 @@ public class GetSessionTest extends BaseTest {
 
         zoneService.deleteZone(zoneResponse.getZoneId());
     }
-
 }

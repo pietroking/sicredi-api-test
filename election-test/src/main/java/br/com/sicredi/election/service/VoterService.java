@@ -27,7 +27,7 @@ public class VoterService {
                 ;
     }
 
-    public Response updateVoter(String voter, Long id){
+    public Response updateVoter(String voter, Integer id){
         return
                 given()
                         .pathParam("id", id)
@@ -38,7 +38,7 @@ public class VoterService {
                 ;
     }
 
-    public Response deleteVoter(Long id){
+    public Response deleteVoter(Integer id){
         return
                 given()
                         .pathParam("id", id)

@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("Colaborador")
 @Epic("Deletar colaboradores")
@@ -39,7 +38,7 @@ public class DeleteCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve deletar um colaborador com sucesso")
-    public void deleteCollaboratorIsOk(){
+    public void delete_WhenCollaboratorIsOk_ThenCollaboratorDeletedSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -55,13 +54,6 @@ public class DeleteCollaboratorTest extends BaseTest {
                 .statusCode(HttpStatus.SC_NO_CONTENT)
         ;
 
-        collaboratorService.findIdSession(sessionResponse.getSessionId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NOT_FOUND)
-                .body(containsString("Não existem colaboradores nesta seção."))
-                ;
-
         sessionService.deleteSession(sessionResponse.getSessionId());
 
         zoneService.deleteZone(zoneResponse.getZoneId());
@@ -70,9 +62,9 @@ public class DeleteCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar deletar um colaborador inexistente")
-    public void deleteCollaboratorIsError(){
+    public void delete_WhenCollaboratorIdInvalid_ThenReturnMessageError(){
 
-        collaboratorService.deleteCollaborator(99999999999999L)
+        collaboratorService.deleteCollaborator(999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)

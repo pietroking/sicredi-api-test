@@ -38,7 +38,7 @@ public class DeleteVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve deletar um elitor com sucesso")
-    public void deleteVoterIsOk(){
+    public void delete_WhenVoterIsOk_ThenVoterDeletedSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -62,9 +62,9 @@ public class DeleteVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar deletar um eleitor inexistente")
-    public void deleteVoterIsError(){
+    public void delete_WhenVoterIdInvalid_ThenReturnMessageError(){
 
-        voterService.deleteVoter(99999999999999L)
+        voterService.deleteVoter(999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)

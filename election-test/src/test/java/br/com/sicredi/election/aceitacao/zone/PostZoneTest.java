@@ -27,7 +27,7 @@ public class PostZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve cadastrar uma zona com sucesso")
-    public void createZoneIsOk(){
+    public void create_WhenZoneRequestIsOk_ThenZoneCreateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
                 .then()
@@ -47,7 +47,7 @@ public class PostZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar uma zona com o numero ja existente")
-    public void createZoneIsNumberExist(){
+    public void create_WhenZoneRequestIsNumberExist_ThenReturnMessageZoneNumberExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -64,7 +64,7 @@ public class PostZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar uma zona sem numero")
-    public void createZoneIsNumberNull(){
+    public void create_WhenZoneRequestIsEmpty_ThenReturnMessageNullError(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneEmpty();
         zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
                 .then()
@@ -78,13 +78,13 @@ public class PostZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar uma zona com numero negativo")
-    public void createZoneIsNegativeNumber(){
+    public void create_WhenZoneRequestIsNumberInvalid_ThenReturnMessageNumberInvalid(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneNegativeNumber();
         zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(containsString("deve ser maior ou igual a 0"))
+                .body(containsString("O number não pode ser negativo"))
         ;
     }
 }

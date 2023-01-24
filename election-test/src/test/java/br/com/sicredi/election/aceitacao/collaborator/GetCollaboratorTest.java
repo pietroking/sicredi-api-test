@@ -36,7 +36,7 @@ public class GetCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve listar colaboradores registrados")
-    public void findAllCollaboratorIsOk(){
+    public void findAllCollaborator_WhenCollaborator_ThenReturnListOfCollaboratorCreated(){
         CollaboratorResponse[] listCollaborator = collaboratorService.findAll()
                 .then()
                 .log().all()
@@ -49,8 +49,8 @@ public class GetCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve listar colaboradores registrados em uma determinada seção")
-    public void findCollaboratorBySessionIsOk(){
-        CollaboratorResponse[] listCollaborator = collaboratorService.findIdSession(8L)
+    public void findCollaboratorBySession_WhenSessionHasCollaborator_ThenReturnListOfSessionCollaborator(){
+        CollaboratorResponse[] listCollaborator = collaboratorService.findIdSession(8)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_OK)
@@ -62,8 +62,8 @@ public class GetCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar listar colaboradores em uma seção inexistente")
-    public void findCollaboratorBySessionIsError(){
-        collaboratorService.findIdSession(99999999999999L)
+    public void findCollaboratorBySession_WhenSessionInvalid_ThenReturnMessageSessionIsNotExist(){
+        collaboratorService.findIdSession(999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
@@ -74,7 +74,7 @@ public class GetCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar listar colaboradores em uma seção sem colaboradores")
-    public void findCollaboratorBySessionIsListCollaboratorEmpty(){
+    public void findCollaboratorBySession_WhenSessionHasNoCollaborator_ThenReturnMessageSessionWithoutCollaborador(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
