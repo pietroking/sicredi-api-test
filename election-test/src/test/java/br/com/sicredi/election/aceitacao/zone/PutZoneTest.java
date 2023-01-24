@@ -14,7 +14,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 @DisplayName("Zona")
 @Epic("Atualizar zona")
 @Feature("Zona")
@@ -25,127 +26,85 @@ public class PutZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve atualizar uma zona com sucesso")
-    public void updadeZoneIsOk(){
+    public void update_WhenZoneUpdateRequestIsOk_ThenZoneUpdateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         ZoneRequest zoneUpdateRequest = zoneBuilder.update_ZoneIsOk();
-        ZoneResponse zoneUpdate = zoneService.updateZone(Utils.convertZoneToJson(zoneUpdateRequest), zoneResponse.getZoneId())
+        zoneService.updateZone(Utils.convertZoneToJson(zoneUpdateRequest), zoneResponse.getZoneId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_OK)
-                .extract().as(ZoneResponse.class)
+                .body("zoneId",is(zoneResponse.getZoneId()))
+                .body("number",is(zoneUpdateRequest.getNumber()))
                 ;
-        assertEquals(zoneResponse.getZoneId(),zoneUpdate.getZoneId());
-        assertEquals(zoneUpdateRequest.getNumber(),zoneUpdate.getNumber());
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma zona com numero já existente")
-    public void updadeZoneIsNumberExist(){
+    public void update_WhenZoneNumberExist_ThenReturnMessageZoneNumberIsExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
-        String message = zoneService.updateZone(Utils.convertZoneToJson(zoneRequest), zoneResponse.getZoneId())
+        zoneService.updateZone(Utils.convertZoneToJson(zoneRequest), zoneResponse.getZoneId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("message")
+                .body(containsString("Número da zona já existe."))
                 ;
-        assertEquals("Número da zona já existe.",message);
 
-
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma zona com numero vazio")
-    public void updadeZoneIsNull(){
+    public void update_WhenZoneUpdateRequestIsEmpty_ThenReturnMessageNullError(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         ZoneRequest zoneUpdate = zoneBuilder.create_ZoneEmpty();
-        String description = zoneService.updateZone(Utils.convertZoneToJson(zoneUpdate), zoneResponse.getZoneId())
+        zoneService.updateZone(Utils.convertZoneToJson(zoneUpdate), zoneResponse.getZoneId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("description")
+                .body(containsString("O number não pode ser nulo"))
                 ;
-        assertEquals("[O number não pode ser nulo]", description);
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma zona com numero negativo")
-    public void updadeZoneIsNegativeNumber(){
+    public void update_WhenZoneUpdateRequestIsNumberInvalid_ThenReturnMessageNumberInvalid(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         ZoneRequest zoneUpdate = zoneBuilder.create_ZoneNegativeNumber();
-        String description = zoneService.updateZone(Utils.convertZoneToJson(zoneUpdate), zoneResponse.getZoneId())
+        zoneService.updateZone(Utils.convertZoneToJson(zoneUpdate), zoneResponse.getZoneId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("description")
+                .body(containsString("O number não pode ser negativo"))
                 ;
-        assertEquals("[deve ser maior ou igual a 0]", description);
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
     @Tag("all")
     @Description("Tentar atualizar uma zona com id inexistente")
-    public void updadeZoneIsZoneIdError(){
+    public void update_WhenZoneIdIsInvalid_ThenReturnMessageZoneNotExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        String message = zoneService.updateZone(Utils.convertZoneToJson(zoneRequest), 99999999999999L)
+        zoneService.updateZone(Utils.convertZoneToJson(zoneRequest), 999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("A zona não existe."))
                 ;
-        assertEquals("A zona não existe.",message);
     }
 }

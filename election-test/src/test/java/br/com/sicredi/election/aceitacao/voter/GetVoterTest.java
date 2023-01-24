@@ -21,8 +21,8 @@ public class GetVoterTest extends BaseTest {
 
     @Test
     @Tag("all")
-    @Description("Deve listar colaboradores registrados")
-    public void findAllCollaboratorIsOk(){
+    @Description("Deve listar eleitores registrados")
+    public void findAllVoter_WhenVoter_ThenReturnListOfVoterCreated(){
         VoterResponse[] listVoter = voterService.findAll()
                 .then()
                 .log().all()

@@ -23,7 +23,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.is;
+
 @DisplayName("Colaborador")
 @Epic("Cadastrar colaboradores")
 @Feature("Colaborador")
@@ -38,57 +39,35 @@ public class PostCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve cadastrar um colaborador com sucesso")
-    public void createCollaboratorIsOk(){
+    public void create_WhenCollaboratorRequestIsOk_ThenCollaboratorCreateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
-        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(SessionResponse.class)
-                ;
+        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest)).then().extract().as(SessionResponse.class);
 
         CollaboratorRequest collaboratorRequest = collaboratorBuilder.create_CollaboratorIsOk(sessionResponse.getSessionId());
         CollaboratorResponse collaboratorResponse = collaboratorService.createCollaborator(Utils.convertCollaboratorToJson(collaboratorRequest))
             .then()
             .log().all()
             .statusCode(HttpStatus.SC_CREATED)
+            .body("sessionId",is(sessionResponse.getSessionId()))
+            .body("name",is(collaboratorRequest.getName()))
+            .body("cpf",is(collaboratorRequest.getCpf()))
             .extract().as(CollaboratorResponse.class)
             ;
-        assertEquals(sessionResponse.getSessionId(),collaboratorResponse.getSessionId());
-        assertEquals(collaboratorRequest.getName(),collaboratorResponse.getName());
-        assertEquals(collaboratorRequest.getCpf(),collaboratorResponse.getCpf());
 
-        collaboratorService.deleteCollaborator(collaboratorResponse.getCollaboratorId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        collaboratorService.deleteCollaborator(collaboratorResponse.getCollaboratorId());
 
-        sessionService.deleteSession(sessionResponse.getSessionId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        sessionService.deleteSession(sessionResponse.getSessionId());
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
     @Tag("all")
     @Description("Tentar cadastrar um colaborador com vazio")
-    public void createCollaboratorIsEmpty(){
+    public void create_WhenCollaboratorRequestIsEmpty_ThenReturnMessageNullError(){
 
         CollaboratorRequest collaboratorRequest = collaboratorBuilder.create_CollaboratorEmpty();
         collaboratorService.createCollaborator(Utils.convertCollaboratorToJson(collaboratorRequest))
@@ -104,30 +83,28 @@ public class PostCollaboratorTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar um colaborado em uma seção inexistente")
-    public void createCollaboratorIsSessionError(){
+    public void create_WhenCollaboratorRequestIsSessionInvalid_ThenReturnMessageSessionNotExist(){
 
         CollaboratorRequest collaboratorRequest = collaboratorBuilder.create_CollaboratorSessionIdError();
-        String message = collaboratorService.createCollaborator(Utils.convertCollaboratorToJson(collaboratorRequest))
+        collaboratorService.createCollaborator(Utils.convertCollaboratorToJson(collaboratorRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("A seção não existe."))
                 ;
-        assertEquals("A seção não existe.",message);
     }
 
     @Test
     @Tag("all")
     @Description("Tentar cadastrar um colaborado com cpf invalido")
-    public void createCollaboratorIsCpfError(){
+    public void create_WhenCollaboratorRequestIsCpfInvalid_ThenReturnMessageCpfInvalid(){
 
         CollaboratorRequest collaboratorRequest = collaboratorBuilder.create_CollaboratorCpfInvalid();
-        String description = collaboratorService.createCollaborator(Utils.convertCollaboratorToJson(collaboratorRequest))
+        collaboratorService.createCollaborator(Utils.convertCollaboratorToJson(collaboratorRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("description")
+                .body(containsString("O CPF está inválido"))
                 ;
-        assertEquals("[O CPF está inválido]",description);
     }
 }

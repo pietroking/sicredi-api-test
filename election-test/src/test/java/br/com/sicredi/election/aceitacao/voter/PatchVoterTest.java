@@ -22,7 +22,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 
 @DisplayName("Eleitor")
 @Epic("Atualizar eleitores")
@@ -38,7 +39,7 @@ public class PatchVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve atualizar um elitor com sucesso")
-    public void updateVoterIsOk(){
+    public void update_WhenVoterUpdateRequestIsOk_ThenVoterUpdateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -52,16 +53,16 @@ public class PatchVoterTest extends BaseTest {
         VoterResponse voterResponse = voterService.createVoter(Utils.convertVoterToJson(voterRequest)).then().extract().as(VoterResponse.class);
 
         VoterRequest voterUpdateRequest = voterBuilder.create_VoterIsOk(sessionResponse2.getSessionId());
-        VoterResponse voterUpdate = voterService.updateVoter(Utils.convertVoterToJson(voterUpdateRequest),voterResponse.getVoterId())
+        voterService.updateVoter(Utils.convertVoterToJson(voterUpdateRequest),voterResponse.getVoterId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_OK)
+                .body("voterId", is(voterResponse.getVoterId()))
+                .body("name", is(voterResponse.getName()))
+                .body("sessionId", is(sessionResponse2.getSessionId()))
+                .body("cpf", is(voterResponse.getCpf()))
                 .extract().as(VoterResponse.class)
                 ;
-        assertEquals(voterResponse.getVoterId(),voterUpdate.getVoterId());
-        assertEquals(sessionResponse2.getSessionId(),voterUpdate.getSessionId());
-        assertEquals(voterResponse.getName(),voterUpdate.getName());
-        assertEquals(voterResponse.getCpf(),voterUpdate.getCpf());
 
         voterService.deleteVoter(voterResponse.getVoterId());
         sessionService.deleteSession(sessionResponse.getSessionId());
@@ -72,7 +73,7 @@ public class PatchVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar um elitor passando seção vazia")
-    public void updateVoterIsSessionEmpty(){
+    public void update_WhenVoterUpdateRequestIsEmpty_ThenReturnMessageNullError(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -83,13 +84,12 @@ public class PatchVoterTest extends BaseTest {
         VoterResponse voterResponse = voterService.createVoter(Utils.convertVoterToJson(voterRequest)).then().extract().as(VoterResponse.class);
 
         VoterRequest voterUpdateRequest = voterBuilder.update_VoterIsSessionEmpty();
-        String description = voterService.updateVoter(Utils.convertVoterToJson(voterUpdateRequest),voterResponse.getVoterId())
+        voterService.updateVoter(Utils.convertVoterToJson(voterUpdateRequest),voterResponse.getVoterId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("description")
+                .body(containsString("O sessionId não pode ser nulo"))
                 ;
-        assertEquals("[O sessionId não pode ser nulo]", description);
 
         voterService.deleteVoter(voterResponse.getVoterId());
         sessionService.deleteSession(sessionResponse.getSessionId());
@@ -99,7 +99,7 @@ public class PatchVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar atualizar um elitor passando seção não existente")
-    public void updateVoterIsSessionError(){
+    public void update_WhenSessionIdIsInvalid_ThenReturnMessageSessionNotExist(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
         ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
@@ -110,8 +110,10 @@ public class PatchVoterTest extends BaseTest {
         VoterResponse voterResponse = voterService.createVoter(Utils.convertVoterToJson(voterRequest)).then().extract().as(VoterResponse.class);
 
         VoterRequest voterUpdateRequest = voterBuilder.update_VoterIsSessionInvalid();
-        String message = voterService.updateVoter(Utils.convertVoterToJson(voterUpdateRequest),voterResponse.getVoterId()).then().extract().path("message");
-        assertEquals("A seção não existe.", message);
+        voterService.updateVoter(Utils.convertVoterToJson(voterUpdateRequest),voterResponse.getVoterId())
+                .then()
+                .body(containsString("A seção não existe."))
+                ;
 
         voterService.deleteVoter(voterResponse.getVoterId());
         sessionService.deleteSession(sessionResponse.getSessionId());

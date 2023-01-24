@@ -22,7 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.containsString;
 
 @DisplayName("Eleitor")
 @Epic("Deletar eleitores")
@@ -38,30 +38,15 @@ public class DeleteVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve deletar um elitor com sucesso")
-    public void deleteVoterIsOk(){
+    public void delete_WhenVoterIsOk_ThenVoterDeletedSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
-        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(SessionResponse.class)
-                ;
+        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest)).then().extract().as(SessionResponse.class);
 
         VoterRequest voterRequest = voterBuilder.create_VoterIsOk(sessionResponse.getSessionId());
-        VoterResponse voterResponse = voterService.createVoter(Utils.convertVoterToJson(voterRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(VoterResponse.class)
-                ;
+        VoterResponse voterResponse = voterService.createVoter(Utils.convertVoterToJson(voterRequest)).then().extract().as(VoterResponse.class);
 
         voterService.deleteVoter(voterResponse.getVoterId())
                 .then()
@@ -69,30 +54,21 @@ public class DeleteVoterTest extends BaseTest {
                 .statusCode(HttpStatus.SC_NO_CONTENT)
         ;
 
-        sessionService.deleteSession(sessionResponse.getSessionId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        sessionService.deleteSession(sessionResponse.getSessionId());
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
     @Tag("all")
     @Description("Tentar deletar um eleitor inexistente")
-    public void deleteVoterIsError(){
+    public void delete_WhenVoterIdInvalid_ThenReturnMessageError(){
 
-        String message = voterService.deleteVoter(99999999999999L)
+        voterService.deleteVoter(999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("O eleitor não existe."))
                 ;
-        assertEquals("O eleitor não existe.",message);
     }
 }

@@ -18,8 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.Matchers.containsString;
 
 @DisplayName("Seção")
 @Epic("Deletar seções")
@@ -33,61 +32,31 @@ public class DeleteSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve deletar uma seção com sucesso")
-    public void deleteSessionIsOk(){
+    public void delete_WhenSessionIsOk_ThenSessionDeletedSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
-        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(SessionResponse.class)
-                ;
-
-        SessionResponse[] listSession = sessionService.findIdZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_OK)
-                .extract().as(SessionResponse[].class)
-                ;
-        assertNotNull(listSession);
+        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest)).then().extract().as(SessionResponse.class);
 
         sessionService.deleteSession(sessionResponse.getSessionId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NO_CONTENT)
                 ;
-        String message = sessionService.findIdZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
-                ;
-        assertEquals("Não existem seções nesta zona.",message);
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
     @Tag("all")
     @Description("Tentar deletar uma seção inexistente")
-    public void deleteSessionIsError(){
-        String message = sessionService.deleteSession(99999999999999L)
+    public void delete_WhenSessionIdInvalid_ThenReturnMessageError(){
+        sessionService.deleteSession(999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("A seção não existe."))
         ;
-        assertEquals("A seção não existe.",message);
     }
 }

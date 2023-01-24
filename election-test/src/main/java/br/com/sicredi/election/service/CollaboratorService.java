@@ -16,7 +16,7 @@ public class CollaboratorService {
                 ;
     }
 
-    public Response findIdSession(Long id){
+    public Response findIdSession(Integer id){
         return
                 given()
                         .queryParam("idSession", id)
@@ -35,7 +35,7 @@ public class CollaboratorService {
                 ;
     }
 
-    public Response updateCollaborator(String collaborator, Long id){
+    public Response updateCollaborator(String collaborator, Integer id){
         return
                 given()
                         .pathParam("id", id)
@@ -46,7 +46,7 @@ public class CollaboratorService {
                 ;
     }
 
-    public Response deleteCollaborator(Long id){
+    public Response deleteCollaborator(Integer id){
         return
                 given()
                         .pathParam("id", id)

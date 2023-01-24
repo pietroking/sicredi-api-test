@@ -16,7 +16,7 @@ public class SessionService {
                 ;
     }
 
-    public Response findIdZone(Long id){
+    public Response findIdZone(Integer id){
         return
                 given()
                         .queryParam("idZone", id)
@@ -34,7 +34,7 @@ public class SessionService {
                 ;
     }
 
-    public Response updateSession(String session, Long id){
+    public Response updateSession(String session, Integer id){
         return
                 given()
                         .pathParam("id", id)
@@ -45,7 +45,7 @@ public class SessionService {
                 ;
     }
 
-    public Response deleteSession(Long id){
+    public Response deleteSession(Integer id){
         return
                 given()
                         .pathParam("id", id)

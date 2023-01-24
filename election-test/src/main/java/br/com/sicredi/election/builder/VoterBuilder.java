@@ -4,9 +4,9 @@ import br.com.sicredi.election.dto.voter.VoterRequest;
 
 public class VoterBuilder {
 
-    private VoterRequest voterRequestBuild(){return VoterRequest.builder().name("teste api").sessionId(1L).cpf("68344658047").build();}
+    private VoterRequest voterRequestBuild(){return VoterRequest.builder().name("teste api").sessionId(1).cpf("68344658047").build();}
 
-    public VoterRequest create_VoterIsOk(Long idSession){
+    public VoterRequest create_VoterIsOk(Integer idSession){
         VoterRequest voterRequest = voterRequestBuild();
         voterRequest.setSessionId(idSession);
         return voterRequest;
@@ -20,7 +20,7 @@ public class VoterBuilder {
     }
     public VoterRequest create_VoterSessionIdError(){
         VoterRequest voterRequestInvalid = voterRequestBuild();
-        voterRequestInvalid.setSessionId(-1L);
+        voterRequestInvalid.setSessionId(-1);
         return voterRequestInvalid;
     }
     public VoterRequest create_VoterCpfInvalid(){
@@ -29,12 +29,12 @@ public class VoterBuilder {
         return voterRequestInvalid;
     }
     public VoterRequest update_VoterIsOk(){
-        return VoterRequest.builder().sessionId(1L).build();
+        return VoterRequest.builder().sessionId(1).build();
     }
     public VoterRequest update_VoterIsSessionEmpty(){
         return VoterRequest.builder().sessionId(null).build();
     }
     public VoterRequest update_VoterIsSessionInvalid(){
-        return VoterRequest.builder().sessionId(-1L).build();
+        return VoterRequest.builder().sessionId(-1).build();
     }
 }

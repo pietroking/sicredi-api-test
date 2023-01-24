@@ -4,8 +4,6 @@ import br.com.sicredi.election.aceitacao.base.BaseTest;
 import br.com.sicredi.election.builder.SessionBuilder;
 import br.com.sicredi.election.builder.VoterBuilder;
 import br.com.sicredi.election.builder.ZoneBuilder;
-import br.com.sicredi.election.dto.collaborator.CollaboratorRequest;
-import br.com.sicredi.election.dto.collaborator.CollaboratorResponse;
 import br.com.sicredi.election.dto.session.SessionRequest;
 import br.com.sicredi.election.dto.session.SessionResponse;
 import br.com.sicredi.election.dto.voter.VoterRequest;
@@ -25,7 +23,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.is;
 
 @DisplayName("Eleitor")
 @Epic("Cadastrar eleitores")
@@ -41,57 +39,35 @@ public class PostVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve cadastrar um elitor com sucesso")
-    public void createVoterIsOk(){
+    public void create_WhenVoterRequestIsOk_ThenVoterCreateSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
         SessionRequest sessionRequest = sessionBuilder.create_SessionIsOk(zoneResponse.getZoneId());
-        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(SessionResponse.class)
-                ;
+        SessionResponse sessionResponse = sessionService.createSession(Utils.convertSessionToJson(sessionRequest)).then().extract().as(SessionResponse.class);
 
         VoterRequest voterRequest = voterBuilder.create_VoterIsOk(sessionResponse.getSessionId());
         VoterResponse voterResponse = voterService.createVoter(Utils.convertVoterToJson(voterRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_CREATED)
+                .body("sessionId",is(sessionResponse.getSessionId()))
+                .body("name",is(voterRequest.getName()))
+                .body("cpf",is(voterRequest.getCpf()))
                 .extract().as(VoterResponse.class)
                 ;
-        assertEquals(sessionResponse.getSessionId(),voterResponse.getSessionId());
-        assertEquals(voterRequest.getName(),voterResponse.getName());
-        assertEquals(voterRequest.getCpf(),voterResponse.getCpf());
 
-        voterService.deleteVoter(voterResponse.getVoterId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        voterService.deleteVoter(voterResponse.getVoterId());
 
-        sessionService.deleteSession(sessionResponse.getSessionId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        sessionService.deleteSession(sessionResponse.getSessionId());
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
     @Tag("all")
     @Description("Tentar cadastrar um eleitor com vazio")
-    public void createVoterIsEmpty(){
+    public void create_WhenVoterRequestIsEmpty_ThenReturnMessageNullError(){
 
         VoterRequest voterRequest = voterBuilder.create_VoterEmpty();
         voterService.createVoter(Utils.convertVoterToJson(voterRequest))
@@ -107,30 +83,29 @@ public class PostVoterTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar cadastrar um eleitor em uma seção inexistente")
-    public void createVoterIsSessionError(){
+    public void create_WhenVoterRequestIsSessionInvalid_ThenReturnMessageSessionNotExist(){
 
         VoterRequest voterRequest = voterBuilder.create_VoterSessionIdError();
-        String message = voterService.createVoter(Utils.convertVoterToJson(voterRequest))
+        voterService.createVoter(Utils.convertVoterToJson(voterRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("A seção não existe."))
                 ;
-        assertEquals("A seção não existe.",message);
+
     }
 
     @Test
     @Tag("all")
     @Description("Tentar cadastrar um eleitor com cpf invalido")
-    public void createVoterIsCpfError(){
+    public void create_WhenVoterRequestIsCpfInvalid_ThenReturnMessageCpfInvalid(){
 
         VoterRequest voterRequest = voterBuilder.create_VoterCpfInvalid();
-        String description = voterService.createVoter(Utils.convertVoterToJson(voterRequest))
+        voterService.createVoter(Utils.convertVoterToJson(voterRequest))
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .extract().path("description")
+                .body(containsString("O CPF está inválido"))
                 ;
-        assertEquals("[O CPF está inválido]",description);
     }
 }

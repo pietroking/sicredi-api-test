@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @JsonIgnoreProperties
 public class SessionRequest {
-    private Long idZone;
-    private Long number;
-    private Long urnNumber;
+    private Integer idZone;
+    private Integer number;
+    private Integer urnNumber;
 }

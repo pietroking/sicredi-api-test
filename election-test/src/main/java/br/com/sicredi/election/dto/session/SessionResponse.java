@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @Data
 @JsonIgnoreProperties
 public class SessionResponse {
-    private Long sessionId;
-    private Long zoneId;
-    private Long number;
-    private Long urnNumber;
+    private Integer sessionId;
+    private Integer zoneId;
+    private Integer number;
+    private Integer urnNumber;
 }

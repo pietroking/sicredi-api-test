@@ -16,7 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DisplayName("Seção")
@@ -30,7 +30,7 @@ public class GetSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve listar seções registradas")
-    public void findAllSessionIsOk(){
+    public void findAllSession_WhenSession_ThenReturnListOfSessionCreated(){
         SessionResponse[] listSession = sessionService.findAll()
                 .then()
                 .log().all()
@@ -43,8 +43,8 @@ public class GetSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve listar seções registradas de uma determinada zona")
-    public void findSessionByZoneIsOk(){
-        SessionResponse[] listSession = sessionService.findIdZone(1L)
+    public void findSessionByZone_WhenSessionInZone_ThenReturnListOfSessionCreatedInTheZone(){
+        SessionResponse[] listSession = sessionService.findIdZone(1)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_OK)
@@ -56,41 +56,29 @@ public class GetSessionTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Tentar listar seções registradas de uma zona inexistente")
-    public void findSessionByZoneIsError(){
-        String message = sessionService.findIdZone(99999999999999L)
+    public void findSessionByZone_WhenZoneInvalid_ThenReturnMessageZoneNotExist(){
+        sessionService.findIdZone(999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("A zona não existe."))
                 ;
-        assertEquals("A zona não existe.",message);
     }
 
     @Test
     @Tag("all")
     @Description("Tentar listar seções de uma zona sem seções")
-    public void findSessionByZoneSessionIsEmpty(){
+    public void findSessionByZone_WhenZoneHasNoSession_ThenReturnMessageNoSessionInTheZone(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
-        String message = sessionService.findIdZone(zoneResponse.getZoneId())
+        sessionService.findIdZone(zoneResponse.getZoneId())
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("Não existem seções nesta zona."))
                 ;
-        assertEquals("Não existem seções nesta zona.",message);
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-        ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
-
 }

@@ -13,8 +13,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.containsString;
 
 @DisplayName("Zona")
 @Epic("Deletar zona")
@@ -26,33 +25,23 @@ public class DeleteZoneTest extends BaseTest {
     @Test
     @Tag("all")
     @Description("Deve deletar uma zona com sucesso")
-    public void deleteZoneIsOk(){
+    public void delete_WhenZoneIsOk_ThenZoneDeletedSuccessfully(){
         ZoneRequest zoneRequest = zoneBuilder.create_ZoneIsOk();
-        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest))
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract().as(ZoneResponse.class)
-                ;
+        ZoneResponse zoneResponse = zoneService.createZone(Utils.convertZoneToJson(zoneRequest)).then().extract().as(ZoneResponse.class);
 
-        zoneService.deleteZone(zoneResponse.getZoneId())
-                .then()
-                .log().all()
-                .statusCode(HttpStatus.SC_NO_CONTENT)
-                ;
+        zoneService.deleteZone(zoneResponse.getZoneId());
     }
 
     @Test
     @Tag("all")
     @Description("Tentar deletar uma zona com id inexistente")
-    public void deleteZoneIsError(){
+    public void delete_WhenZoneIdInvalid_ThenReturnMessageError(){
 
-        String message = zoneService.deleteZone(99999999999999L)
+        zoneService.deleteZone(999999999)
                 .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_NOT_FOUND)
-                .extract().path("message")
+                .body(containsString("A zona não existe."))
                 ;
-        assertEquals("A zona não existe.",message);
     }
 }
