@@ -1,0 +1,1 @@
+{"uuid":"9a3e0daa-efeb-4e9a-a93c-e183fec5452f","name":"findCollaboratorBySession_WhenSessionHasCollaborator_ThenReturnListOfSessionCollaborator()","children":["1e83d54e-4aca-4c3a-8a50-bb06401bb55c"],"befores":[],"afters":[],"links":[],"start":1674611100077,"stop":1674611100087}

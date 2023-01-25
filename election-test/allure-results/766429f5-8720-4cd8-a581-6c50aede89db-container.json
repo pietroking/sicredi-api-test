@@ -1,0 +1,1 @@
+{"uuid":"766429f5-8720-4cd8-a581-6c50aede89db","name":"create_WhenVoteRequestIsCandidateNumberInvalid_ThenReturnMessageCandidateNoExist()","children":["27653a26-a123-40ba-81e3-5aa2cedb22dd"],"befores":[],"afters":[],"links":[],"start":1674611099172,"stop":1674611099285}

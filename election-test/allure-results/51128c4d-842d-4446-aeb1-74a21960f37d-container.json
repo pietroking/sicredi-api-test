@@ -1,0 +1,1 @@
+{"uuid":"51128c4d-842d-4446-aeb1-74a21960f37d","name":"create_WhenCandidateRequestIsCpfInvalid_ThenReturnMessageCpfInvalid()","children":["94fd7f93-3c1e-4344-b5b0-a437d87e6af7"],"befores":[],"afters":[],"links":[],"start":1674581217334,"stop":1674581217344}

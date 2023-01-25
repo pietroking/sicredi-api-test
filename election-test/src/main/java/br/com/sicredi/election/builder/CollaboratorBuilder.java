@@ -28,9 +28,6 @@ public class CollaboratorBuilder {
         collaboratorRequestInvalid.setCpf("111111111111");
         return collaboratorRequestInvalid;
     }
-    public CollaboratorRequest update_CollaboratorIsOk(){
-        return CollaboratorRequest.builder().sessionId(1).build();
-    }
     public CollaboratorRequest update_CollaboratorIsSessionEmpty(){
         return CollaboratorRequest.builder().sessionId(null).build();
     }
