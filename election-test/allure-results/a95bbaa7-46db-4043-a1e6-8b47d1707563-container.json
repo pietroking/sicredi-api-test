@@ -1,0 +1,1 @@
+{"uuid":"a95bbaa7-46db-4043-a1e6-8b47d1707563","name":"delete_WhenVoterIdInvalid_ThenReturnMessageError()","children":["bda3c711-c682-4179-bf2c-5eb2eb04e972"],"befores":[],"afters":[],"links":[],"start":1674596057574,"stop":1674596057590}

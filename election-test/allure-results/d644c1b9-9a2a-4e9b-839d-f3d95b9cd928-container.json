@@ -1,0 +1,1 @@
+{"uuid":"d644c1b9-9a2a-4e9b-839d-f3d95b9cd928","name":"findSessionByZone_WhenSessionInZone_ThenReturnListOfSessionCreatedInTheZone()","children":["7cbff012-d35f-450e-997e-8bccc6c95373"],"befores":[],"afters":[],"links":[],"start":1674581217506,"stop":1674581217515}

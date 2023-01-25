@@ -28,9 +28,6 @@ public class VoterBuilder {
         voterRequestInvalid.setCpf("111111111111");
         return voterRequestInvalid;
     }
-    public VoterRequest update_VoterIsOk(){
-        return VoterRequest.builder().sessionId(1).build();
-    }
     public VoterRequest update_VoterIsSessionEmpty(){
         return VoterRequest.builder().sessionId(null).build();
     }

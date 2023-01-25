@@ -1,0 +1,1 @@
+{"uuid":"00bf7389-546d-4a2e-abb7-fd1fd9ad3e1b","name":"findCandidateFindByName_WhenNameHasNoMention_ThenReturnMessageNoCandidateCreated()","children":["f620d271-9cba-4c6a-bc89-84780eb3862a"],"befores":[],"afters":[],"links":[],"start":1674596057541,"stop":1674596057567}
